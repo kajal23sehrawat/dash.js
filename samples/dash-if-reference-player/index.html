@@ -38,6 +38,34 @@
     <!-- Google Cast -->
     <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
 
+    
+    <script>
+        setInterval(() => {
+        const videoPlayer = document.getElementById('videoPlayer'); // Make sure this ID matches your video player ID
+        
+        // Buffer Level
+        const bufferLevel = videoPlayer.buffered.length > 0 
+            ? videoPlayer.buffered.end(0) - videoPlayer.currentTime
+            : 0;
+    
+        // Measured Throughput
+        const metrics = dashjs.MediaPlayer().getMetricsFor('Stream');
+        const throughput = metrics ? metrics.getCurrentMetrics().throughput : 0;
+    
+        // Latency (average over last four segments)
+        const latencyMetrics = metrics ? metrics.getCurrentMetrics().latency : [];
+        const latency = latencyMetrics.length > 0 
+            ? latencyMetrics.slice(-4).reduce((a, b) => a + b) / Math.min(latencyMetrics.length, 4)
+            : 0;
+    
+        // Logging metrics
+        console.log(`Buffer Level: ${bufferLevel.toFixed(2)} seconds, Throughput: ${(throughput / 1e6).toFixed(2)} Mbps, Latency: ${latency.toFixed(2)} seconds`);
+    }, 8000);
+    </script>
+    
+
+
+
 </head>
 <body ng-controller="DashController">
 
@@ -917,7 +945,7 @@
     <div class="row">
         <div class="dash-video-player col-md-9">
             <div id="videoContainer" class="videoContainer">
-                <video disableRemotePlayback="true"></video>
+                <video id="videoPlayer" disableRemotePlayback="true"></video>
                 <div id="video-caption"></div>
                 <div id="cast-msg" ng-if="isCasting">
                     {{ castPlayerState === 'IDLE' ? 'Ready to cast stream' : castPlayerState }}
